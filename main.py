@@ -63,6 +63,7 @@ def user_register(u: NewUser):
             "result": "Username or Email is already use"
         }
 
+# login
 @app.get("/login/")
 def user_login(u: User):
     query = {
@@ -72,7 +73,7 @@ def user_login(u: User):
     user = collection_user.find_one(query, {})
 
     if user is None:
-        raise HTTPException(404, f"Couldn't find user: {u.username}")
+        raise HTTPException(404, detail = f"Couldn't find user: {u.username}")
     elif passwordContext.verify(u.password, user["password"]):
         return {
             "username": user["username"],
@@ -83,22 +84,6 @@ def user_login(u: User):
             "result": "Incorrect password"
         }
 
-
-
-#user information
-# @app.get("/get/user-info/")
-# def user_login(u: User):
-#     query = {
-#         "username": u.username,
-#         "password": u.password
-#     }
-
-#     user = collection1.find_one(query, {"_id": 0})
-
-#     if user is None:
-#         raise HTTPException(404, f"Couldn't find user: {u.username}")
-    
-#     return user
 
 # add text to 4 bottoms
 # @app.put("/user-update/")
