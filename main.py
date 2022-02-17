@@ -24,38 +24,31 @@ db =client["user-data"]
 collection1 = db["user"]
 
 
-class user(BaseModel):
-    username: str
-    password: str
-    email: str
-    SerialNumber: str
+class User(BaseModel):
+    UserName: str
+    Password: str
+    FirstName: str
+    LastName: str
+    Email: str
 
 
 # register new user
 @app.post("/user-register/")
-def user_register(u: user):
-    query1 = {
-        "username": u.username,
-    }
-    query2 = {
-        "SerialNumber": u.SerialNumber
+def user_register(u: User):
+    query = {
+        "Email": u.Email
     }
 
+    check_Email = collection1.find_one(query, {"_id": 0})
 
-    check_username = collection1.find_one(query1, {"_id": 0})
-    check_SerialNumber = collection1.find_one(query2, {"_id": 0})
-
-    if check_username is None and check_SerialNumber is None:
+    if check_Email is None:
         user = {
-            "username": u.username,
-            "password": u.password,
-            "SerialNumber": u.SerialNumber,
-            "bt1": None,
-            "bt2": None,
-            "bt3": None,
-            "bt4": None,
-            "BreakText": "Break!!!",
-            "LightBrokenText": "ไฟเสีย"
+            "UserName": u.UserName,
+            "Password": u.Password,
+            "FirstName": u.FirstName,
+            "LastName": u.LastName,
+            "Email": u.Email,
+            "IdCar": []
         }
         collection1.insert_one(user)
         return {
@@ -68,7 +61,7 @@ def user_register(u: user):
 
 #user information
 @app.get("/get/user-info/")
-def user_login(u: user):
+def user_login(u: User):
     query = {
         "username": u.username,
         "password": u.password
@@ -83,7 +76,7 @@ def user_login(u: user):
 
 # add text to 4 bottoms
 @app.put("/user-update/")
-def add_text_bt(u: user, text1: Optional[str] = None, text2: Optional[str] = None,
+def add_text_bt(u: User, text1: Optional[str] = None, text2: Optional[str] = None,
 text3: Optional[str] = None, text4: Optional[str] = None):
     query = {
         "username": u.username,
