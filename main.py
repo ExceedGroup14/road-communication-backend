@@ -47,8 +47,7 @@ def user_register(u: User):
             "Password": u.Password,
             "FirstName": u.FirstName,
             "LastName": u.LastName,
-            "Email": u.Email,
-            "IdCar": []
+            "Email": u.Email
         }
         collection1.insert_one(user)
         return {
@@ -56,7 +55,7 @@ def user_register(u: User):
         }
     else:
         return {
-            "result": "username or serial number is already use"
+            "result": "Email is already use"
         }
 
 #user information
