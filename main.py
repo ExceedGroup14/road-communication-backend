@@ -114,27 +114,3 @@ def user_add_text(t: Text, email: str):
     return {
         "result": "add text to bottom successfully!"
     }
-
-# add text to 4 bottoms
-# @app.put("/user-update/")
-# def add_text_bt(u: User, text1: Optional[str] = None, text2: Optional[str] = None,
-# text3: Optional[str] = None, text4: Optional[str] = None):
-#     query = {
-#         "username": u.username,
-#         "password": u.password
-#     }
-
-#     new_value = {
-#         "$set": {
-#             "bt1": text1,
-#             "bt2": text2,
-#             "bt3": text3,
-#             "bt4": text4
-#         }
-#     }
-
-#     collection1.update_one(query, new_value)
-    
-#     return {
-#         "result": "update complete"
-#     }
