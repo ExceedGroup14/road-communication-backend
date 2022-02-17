@@ -120,10 +120,10 @@ def add_car(car: Car):
     if check_id_car is None:
         car = {"email": car.email,
                "ID": car.ID,
-               "bt1": None,
-               "bt2": None,
-               "bt3": None,
-               "bt4": None,
+               "bt1": "สวัสดีครับ",
+               "bt2": "ขับขี่ ปลอดภัยนะครับ",
+               "bt3": "ขอบคุณครับ",
+               "bt4": "เมาไม่ขับ ครับ",
                "break_light": "Break !!",
                "broken": "ขอโทษครับ ไฟเสียครับ"}
         c = jsonable_encoder(car)
@@ -135,3 +135,12 @@ def add_car(car: Car):
         return {
             "result": "This car ID already has."
         }
+
+
+@app.get('/all-car/')
+def get_all_car(email: str):
+    car = data_car.find({"email": email}, {"_id": 0})
+    data = []
+    for i in car:
+        data.append(i)
+    return data
