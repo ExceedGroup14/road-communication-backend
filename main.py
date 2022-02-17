@@ -21,7 +21,8 @@ app.add_middleware(
 
 client = MongoClient('mongodb://localhost', 27017)
 db =client["user-data"]
-collection_user = db["user"]
+dbUser = db["user"]
+dbCar = db["car"]
 
 
 class NewUser(BaseModel):
@@ -47,14 +48,14 @@ def user_register(u: NewUser):
         "username": u.username
     }
 
-    check_Email = collection_user.find_one(query1, {})
-    check_username = collection_user.find_one(query2, {})
+    check_Email = dbUser.find_one(query1, {})
+    check_username = dbUser.find_one(query2, {})
 
     if check_Email is None and check_username is None:
         hashedPassword = passwordContext.hash(u.password)
         u.password = hashedPassword
         user = jsonable_encoder(u)
-        collection_user.insert_one(user)
+        dbUser.insert_one(user)
         return {
             "result": "register successfully"
         }
@@ -70,7 +71,7 @@ def user_login(u: User):
         "username": u.username,
     }
 
-    user = collection_user.find_one(query, {})
+    user = dbUser.find_one(query, {})
 
     if user is None:
         raise HTTPException(404, detail = f"Couldn't find user: {u.username}")
@@ -84,6 +85,35 @@ def user_login(u: User):
             "result": "Incorrect password"
         }
 
+class Text(BaseModel):
+    text1: Optional[str] = None
+    text2: Optional[str] = None
+    text3: Optional[str] = None
+    text4: Optional[str] = None
+
+@app.put("/add-text/{email}")
+def user_add_text(t: Text, email: str):
+    query = {
+        "email": email
+    }
+    
+    if t.text1 is not None:
+        new_value = {"$set": {"bt1": t.text1}}
+    elif t.text2 is not None:
+        new_value = {"$set": {"bt2": t.text2}}
+    elif t.text3 is not None:
+        new_value = {"$set": {"bt3": t.text3}}
+    elif t.text4 is not None:
+        new_value = {"$set": {"bt4": t.text4}}
+    else:
+        return {
+            "result": "nothing change"
+        }
+    
+    dbCar.update_one(query, new_value)
+    return {
+        "result": "add text to bottom successfully!"
+    }
 
 # add text to 4 bottoms
 # @app.put("/user-update/")
