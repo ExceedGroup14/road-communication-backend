@@ -91,6 +91,7 @@ class Text(BaseModel):
     text3: Optional[str] = None
     text4: Optional[str] = None
 
+# add text to bottom
 @app.put("/add-text/{email}")
 def user_add_text(t: Text, email: str):
     query = {
