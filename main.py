@@ -143,4 +143,6 @@ def get_all_car(email: str):
     data = []
     for i in car:
         data.append(i)
-    return data
+    return {
+        "result": data
+    }
