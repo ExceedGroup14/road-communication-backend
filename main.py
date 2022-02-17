@@ -101,20 +101,23 @@ def user_add_text(t: Text, email: str):
     query = {
         "email": email
     }
-    
-    if t.text1 is not None:
-        new_value = {"$set": {"bt1": t.text1}}
-    elif t.text2 is not None:
-        new_value = {"$set": {"bt2": t.text2}}
-    elif t.text3 is not None:
-        new_value = {"$set": {"bt3": t.text3}}
-    elif t.text4 is not None:
-        new_value = {"$set": {"bt4": t.text4}}
-    else:
+    if t.text1 is None and t.text2 is None and t.text3 is None and t.text4 is None:
         return {
             "result": "nothing change"
         }
-    dbCar.update_one(query, new_value)
+    
+    if t.text1 is not None:
+        new_value = {"$set": {"bt1": t.text1}}
+        dbCar.update_one(query, new_value)
+    if t.text2 is not None:
+        new_value = {"$set": {"bt2": t.text2}}
+        dbCar.update_one(query, new_value)
+    if t.text3 is not None:
+        new_value = {"$set": {"bt3": t.text3}}
+        dbCar.update_one(query, new_value)
+    if t.text4 is not None:
+        new_value = {"$set": {"bt4": t.text4}}
+        dbCar.update_one(query, new_value)
     return {
         "result": "add text to bottom successfully!"
     }
