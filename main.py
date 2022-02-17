@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-
+from passlib.context import CryptContext
 app = FastAPI()
 
 origins = [
@@ -20,17 +20,23 @@ app.add_middleware(
 )
 
 client = MongoClient('mongodb://localhost', 27017)
-db = client["user-data"]
-collection1 = db["user"]
-data_car = db['car']
+db =client["user-data"]
+dbUser = db["user"]
+dbCar = db["car"]
 
+
+class NewUser(BaseModel):
+    username: str
+    password: str
+    email: str
+    firstname: str
+    lastname: str
 
 class User(BaseModel):
     username: str
     password: str
-    email: str
-    SerialNumber: str
 
+passwordContext = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
 class Car(BaseModel):
     email: str
@@ -38,85 +44,85 @@ class Car(BaseModel):
 
 
 # register new user
-@app.post("/user-register/")
-def user_register(u: User):
+@app.post("/register/")
+def user_register(u: NewUser):
     query1 = {
-        "username": u.username,
+        "email": u.email
     }
     query2 = {
-        "SerialNumber": u.SerialNumber
+        "username": u.username
     }
+    check_Email = dbUser.find_one(query1, {})
+    check_username = dbUser.find_one(query2, {})
 
-    check_username = collection1.find_one(query1, {"_id": 0})
-    check_SerialNumber = collection1.find_one(query2, {"_id": 0})
-
-    if check_username is None and check_SerialNumber is None:
-        user = {
-            "username": u.username,
-            "password": u.password,
-            "SerialNumber": u.SerialNumber,
-            "bt1": None,
-            "bt2": None,
-            "bt3": None,
-            "bt4": None,
-            "BreakText": "Break!!!",
-            "LightBrokenText": "ไฟเสีย"
-        }
-        collection1.insert_one(user)
+    if check_Email is None and check_username is None:
+        hashedPassword = passwordContext.hash(u.password)
+        u.password = hashedPassword
+        user = jsonable_encoder(u)
+        dbUser.insert_one(user)
         return {
             "result": "register successfully"
         }
     else:
         return {
-            "result": "username or serial number is already use"
+            "result": "Username or Email is already use"
         }
 
 
-# user information
-@app.get("/get/user-info/")
+# login
+@app.get("/login/")
 def user_login(u: User):
     query = {
         "username": u.username,
-        "password": u.password
     }
 
-    user = collection1.find_one(query, {"_id": 0})
-
+    user = dbUser.find_one(query, {})
     if user is None:
-        raise HTTPException(404, f"Couldn't find user: {u.username}")
-
-    return user
-
-
-# add text to 4 bottoms
-@app.put("/user-update/")
-def add_text_bt(u: User, text1: Optional[str] = None, text2: Optional[str] = None,
-                text3: Optional[str] = None, text4: Optional[str] = None):
-    query = {
-        "username": u.username,
-        "password": u.password
-    }
-
-    new_value = {
-        "$set": {
-            "bt1": text1,
-            "bt2": text2,
-            "bt3": text3,
-            "bt4": text4
+        raise HTTPException(404, detail = f"Couldn't find user: {u.username}")
+    elif passwordContext.verify(u.password, user["password"]):
+        return {
+            "username": user["username"],
+            "email": user["email"]
         }
+    else:
+        return {
+            "result": "Incorrect password"
+        }
+
+class Text(BaseModel):
+    text1: Optional[str] = None
+    text2: Optional[str] = None
+    text3: Optional[str] = None
+    text4: Optional[str] = None
+
+# add text to bottom
+@app.put("/add-text/")
+def user_add_text(t: Text, email: str):
+    query = {
+        "email": email
     }
-
-    collection1.update_one(query, new_value)
-
+    
+    if t.text1 is not None:
+        new_value = {"$set": {"bt1": t.text1}}
+    elif t.text2 is not None:
+        new_value = {"$set": {"bt2": t.text2}}
+    elif t.text3 is not None:
+        new_value = {"$set": {"bt3": t.text3}}
+    elif t.text4 is not None:
+        new_value = {"$set": {"bt4": t.text4}}
+    else:
+        return {
+            "result": "nothing change"
+        }
+    dbCar.update_one(query, new_value)
     return {
-        "result": "update complete"
+        "result": "add text to bottom successfully!"
     }
-
-
+ 
 @app.post('/add-car/')
 def add_car(car: Car):
     query = {"ID": car.ID}
-    check_id_car = data_car.find_one(query, {"_id": 0})
+    check_id_car = dbCar.find_one(query, {"_id": 0})
     if check_id_car is None:
         car = {"email": car.email,
                "ID": car.ID,
@@ -127,7 +133,7 @@ def add_car(car: Car):
                "break_light": "Break !!",
                "broken": "ขอโทษครับ ไฟเสียครับ"}
         c = jsonable_encoder(car)
-        data_car.insert_one(c)
+        dbCar.insert_one(c)
         return {
             "result": "The car was added successfully."
         }
@@ -139,7 +145,7 @@ def add_car(car: Car):
 
 @app.get('/all-car/')
 def get_all_car(email: str):
-    car = data_car.find({"email": email}, {"_id": 0})
+    car = dbCar.find({"email": email}, {"_id": 0})
     data = []
     for i in car:
         data.append(i)
