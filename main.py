@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
-
+from passlib.context import CryptContext
 app = FastAPI()
 
 origins = [
@@ -21,52 +21,84 @@ app.add_middleware(
 
 client = MongoClient('mongodb://localhost', 27017)
 db =client["user-data"]
-collection1 = db["user"]
+collection_user = db["user"]
 
 
+class NewUser(BaseModel):
+    username: str
+    password: str
+    email: str
+    firstname: str
+    lastname: str
 
 class User(BaseModel):
-    UserName: str
-    Password: str
-    FirstName: str
-    LastName: str
-    Email: str
+    username: str
+    password: str
 
+passwordContext = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
 # register new user
-@app.post("/user-register/")
-def user_register(u: User):
-    query = {
-        "Email": u.Email
+@app.post("/register/")
+def user_register(u: NewUser):
+    query1 = {
+        "email": u.email
+    }
+    query2 = {
+        "username": u.username
     }
 
-    check_Email = collection1.find_one(query, {})
+    check_Email = collection_user.find_one(query1, {})
+    check_username = collection_user.find_one(query2, {})
 
-    if check_Email is None:
+    if check_Email is None and check_username is None:
+        hashedPassword = passwordContext.hash(u.password)
+        u.password = hashedPassword
         user = jsonable_encoder(u)
-        collection1.insert_one(user)
+        collection_user.insert_one(user)
         return {
             "result": "register successfully"
         }
     else:
         return {
-            "result": "Email is already use"
+            "result": "Username or Email is already use"
         }
 
-#user information
-@app.get("/get/user-info/")
+@app.get("/login/")
 def user_login(u: User):
     query = {
         "username": u.username,
-        "password": u.password
     }
 
-    user = collection1.find_one(query, {"_id": 0})
+    user = collection_user.find_one(query, {})
 
     if user is None:
         raise HTTPException(404, f"Couldn't find user: {u.username}")
+    elif passwordContext.verify(u.password, user["password"]):
+        return {
+            "username": user["username"],
+            "email": user["email"]
+        }
+    else:
+        return {
+            "result": "Incorrect password"
+        }
+
+
+
+#user information
+# @app.get("/get/user-info/")
+# def user_login(u: User):
+#     query = {
+#         "username": u.username,
+#         "password": u.password
+#     }
+
+#     user = collection1.find_one(query, {"_id": 0})
+
+#     if user is None:
+#         raise HTTPException(404, f"Couldn't find user: {u.username}")
     
-    return user
+#     return user
 
 # add text to 4 bottoms
 # @app.put("/user-update/")
