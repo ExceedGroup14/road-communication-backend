@@ -38,6 +38,11 @@ class User(BaseModel):
 
 passwordContext = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
+class Car(BaseModel):
+    email: str
+    ID: str
+
+
 # register new user
 @app.post("/register/")
 def user_register(u: NewUser):
@@ -47,7 +52,6 @@ def user_register(u: NewUser):
     query2 = {
         "username": u.username
     }
-
     check_Email = dbUser.find_one(query1, {})
     check_username = dbUser.find_one(query2, {})
 
@@ -64,6 +68,7 @@ def user_register(u: NewUser):
             "result": "Username or Email is already use"
         }
 
+
 # login
 @app.get("/login/")
 def user_login(u: User):
@@ -72,7 +77,6 @@ def user_login(u: User):
     }
 
     user = dbUser.find_one(query, {})
-
     if user is None:
         raise HTTPException(404, detail = f"Couldn't find user: {u.username}")
     elif passwordContext.verify(u.password, user["password"]):
@@ -110,8 +114,41 @@ def user_add_text(t: Text, email: str):
         return {
             "result": "nothing change"
         }
-    
     dbCar.update_one(query, new_value)
     return {
         "result": "add text to bottom successfully!"
+    }
+ 
+@app.post('/add-car/')
+def add_car(car: Car):
+    query = {"ID": car.ID}
+    check_id_car = dbCar.find_one(query, {"_id": 0})
+    if check_id_car is None:
+        car = {"email": car.email,
+               "ID": car.ID,
+               "bt1": "สวัสดีครับ",
+               "bt2": "ขับขี่ ปลอดภัยนะครับ",
+               "bt3": "ขอบคุณครับ",
+               "bt4": "เมาไม่ขับ ครับ",
+               "break_light": "Break !!",
+               "broken": "ขอโทษครับ ไฟเสียครับ"}
+        c = jsonable_encoder(car)
+        dbCar.insert_one(c)
+        return {
+            "result": "The car was added successfully."
+        }
+    else:
+        return {
+            "result": "This car ID already has."
+        }
+
+
+@app.get('/all-car/')
+def get_all_car(email: str):
+    car = dbCar.find({"email": email}, {"_id": 0})
+    data = []
+    for i in car:
+        data.append(i)
+    return {
+        "result": data
     }
