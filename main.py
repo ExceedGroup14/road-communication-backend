@@ -24,6 +24,7 @@ db =client["user-data"]
 collection1 = db["user"]
 
 
+
 class User(BaseModel):
     UserName: str
     Password: str
@@ -39,16 +40,10 @@ def user_register(u: User):
         "Email": u.Email
     }
 
-    check_Email = collection1.find_one(query, {"_id": 0})
+    check_Email = collection1.find_one(query, {})
 
     if check_Email is None:
-        user = {
-            "UserName": u.UserName,
-            "Password": u.Password,
-            "FirstName": u.FirstName,
-            "LastName": u.LastName,
-            "Email": u.Email
-        }
+        user = jsonable_encoder(u)
         collection1.insert_one(user)
         return {
             "result": "register successfully"
@@ -74,25 +69,25 @@ def user_login(u: User):
     return user
 
 # add text to 4 bottoms
-@app.put("/user-update/")
-def add_text_bt(u: User, text1: Optional[str] = None, text2: Optional[str] = None,
-text3: Optional[str] = None, text4: Optional[str] = None):
-    query = {
-        "username": u.username,
-        "password": u.password
-    }
+# @app.put("/user-update/")
+# def add_text_bt(u: User, text1: Optional[str] = None, text2: Optional[str] = None,
+# text3: Optional[str] = None, text4: Optional[str] = None):
+#     query = {
+#         "username": u.username,
+#         "password": u.password
+#     }
 
-    new_value = {
-        "$set": {
-            "bt1": text1,
-            "bt2": text2,
-            "bt3": text3,
-            "bt4": text4
-        }
-    }
+#     new_value = {
+#         "$set": {
+#             "bt1": text1,
+#             "bt2": text2,
+#             "bt3": text3,
+#             "bt4": text4
+#         }
+#     }
 
-    collection1.update_one(query, new_value)
+#     collection1.update_one(query, new_value)
     
-    return {
-        "result": "update complete"
-    }
+#     return {
+#         "result": "update complete"
+#     }
