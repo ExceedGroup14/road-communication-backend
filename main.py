@@ -97,6 +97,7 @@ def user_login(u: User):
 
 
 class Text(BaseModel):
+    email: str
     text1: Optional[str] = None
     text2: Optional[str] = None
     text3: Optional[str] = None
@@ -105,9 +106,9 @@ class Text(BaseModel):
 
 # add text to bottom
 @app.put("/add-text/")
-def user_add_text(t: Text, email: str):
+def user_add_text(t: Text):
     query = {
-        "email": email
+        "email": t.email
     }
     if t.text1 is None and t.text2 is None and t.text3 is None and t.text4 is None:
         return {
@@ -135,10 +136,17 @@ def user_add_text(t: Text, email: str):
 def add_car(car: Car):
     query = {"ID": car.ID}
     query2 = {"serial_number": car.serial_number}
+    query3 = {"email": car.email}
 
+    check_user = dbUser.find_one(query3, {})
     check_id_car = dbCar.find_one(query, {"_id": 0})
     check_Snum_in_dbCar = dbCar.find_one(query2, {})
     check_Snum_in_dbSnum = dbSnum.find_one(query2, {})
+
+    if check_user is None:
+        return {
+            "result": "This email has no in Database."
+        }
 
     if check_Snum_in_dbSnum is None:
         return {
