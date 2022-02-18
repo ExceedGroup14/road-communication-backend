@@ -23,6 +23,7 @@ client = MongoClient('mongodb://localhost', 27017)
 db =client["user-data"]
 dbUser = db["user"]
 dbCar = db["car"]
+dbSnum = db["serial_number"]
 
 
 class NewUser(BaseModel):
@@ -41,6 +42,7 @@ passwordContext = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 class Car(BaseModel):
     email: str
     ID: str
+    serial_number: str
 
 
 # register new user
@@ -125,10 +127,21 @@ def user_add_text(t: Text, email: str):
 @app.post('/add-car/')
 def add_car(car: Car):
     query = {"ID": car.ID}
+    query2 = {"serial_number": car.serial_number}
+
     check_id_car = dbCar.find_one(query, {"_id": 0})
-    if check_id_car is None:
+    check_Snum_in_dbCar = dbCar.find_one(query2, {})
+    check_Snum_in_dbSnum = dbSnum.find_one(query2, {})
+
+    if check_Snum_in_dbSnum is None:
+        return {
+            "result": "This serial number is not in database."
+        }
+
+    if check_id_car is None and check_Snum_in_dbCar is None:
         car = {"email": car.email,
                "ID": car.ID,
+               "serial_number": car.serial_number,
                "bt1": "สวัสดีครับ",
                "bt2": "ขับขี่ ปลอดภัยนะครับ",
                "bt3": "ขอบคุณครับ",
@@ -142,7 +155,7 @@ def add_car(car: Car):
         }
     else:
         return {
-            "result": "This car ID already has."
+            "result": "This car ID or serial number already has."
         }
 
 
