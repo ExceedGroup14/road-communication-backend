@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import time
+
 app = FastAPI()
 
 origins = [
@@ -75,7 +76,9 @@ def user_register(u: NewUser):
             "result": "Username or Email is already use"
         }
 
+
 SECRET = "aa452d886485af0c397cb635cab16f4213ea9b97e311b38dd7d47c0184461151"
+
 
 # login
 @app.post("/login/")
@@ -89,7 +92,7 @@ def user_login(u: User):
         raise HTTPException(404, detail=f"Couldn't find user: {u.username}")
     elif passwordContext.verify(u.password, user["password"]):
         expirationTime = int(time.time() + 3600)
-        token = jwt.encode({"exp": expirationTime}, SECRET, algorithm="HS256")
+        token = jwt.encode({"exp": expirationTime, "email": user["email"]}, SECRET, algorithm="HS256")
 
         return {
             "token": token
@@ -101,7 +104,8 @@ def user_login(u: User):
 
 
 class Text(BaseModel):
-    email: str
+    token: str
+    serial_number: int
     text1: Optional[str] = None
     text2: Optional[str] = None
     text3: Optional[str] = None
@@ -111,9 +115,8 @@ class Text(BaseModel):
 # add text to bottom
 @app.put("/add-text/")
 def user_add_text(t: Text):
-    query = {
-        "email": t.email
-    }
+    processed_token = jwt.decode(t.token, SECRET, algorithms="HS256")
+    email = {"email": processed_token["email"]}
     if t.text1 is None and t.text2 is None and t.text3 is None and t.text4 is None:
         return {
             "result": "nothing change"
@@ -121,16 +124,24 @@ def user_add_text(t: Text):
 
     if t.text1 is not None:
         new_value = {"$set": {"bt1": t.text1}}
-        dbCar.update_one(query, new_value)
+        new_num = {"$set": {"Numbt1": 0}}
+        dbCar.update_one(email, new_value)
+        dbCar.update_one(email, new_num)
     if t.text2 is not None:
         new_value = {"$set": {"bt2": t.text2}}
-        dbCar.update_one(query, new_value)
+        new_num = {"$set": {"Numbt2": 0}}
+        dbCar.update_one(email, new_value)
+        dbCar.update_one(email, new_num)
     if t.text3 is not None:
         new_value = {"$set": {"bt3": t.text3}}
-        dbCar.update_one(query, new_value)
+        new_num = {"$set": {"Numbt3": 0}}
+        dbCar.update_one(email, new_value)
+        dbCar.update_one(email, new_num)
     if t.text4 is not None:
         new_value = {"$set": {"bt4": t.text4}}
-        dbCar.update_one(query, new_value)
+        new_num = {"$set": {"Numbt4": 0}}
+        dbCar.update_one(email, new_value)
+        dbCar.update_one(email, new_num)
     return {
         "result": "add text to bottom successfully!"
     }
@@ -184,7 +195,9 @@ def add_car(car: Car):
 
 
 @app.get('/all-car/')
-def get_all_car(email: str):
+def get_all_car(token: str):
+    processed_token = jwt.decode(token, SECRET, algorithms="HS256")
+    email = processed_token["email"]
     car = dbCar.find({"email": email}, {"_id": 0})
     data = []
     for i in car:
@@ -247,6 +260,7 @@ def output_text_hardware(input: Input):
         return {
             "text": car["broken"]
         }
+
 
 @app.get("/get-text/")
 def get_text(input: Input):
