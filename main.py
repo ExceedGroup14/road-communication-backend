@@ -213,6 +213,14 @@ def get_all_car(token: str):
     }
 
 
+@app.get('/get_car/')
+def get_car(token: str, serial_number: str):
+    processed_token = jwt.decode(token, SECRET, algorithms="HS256")
+    email = processed_token["email"]
+    car = dbCar.find_one({"email": email, "serial_number": serial_number}, {"_id": 0})
+    return {"result": car}
+
+
 class Input(BaseModel):
     serial_number: int
     bt1: int
@@ -290,7 +298,6 @@ def output_text_hardware(input: Input):
     elif input.bt_break == 0:
         new_value = {"$set": {"status_break": 0}}
         dbCar.update_one(query, new_value)
-
 
 
 @app.get("/get-text/")
