@@ -172,7 +172,7 @@ def add_car(car: Car):
         }
 
     if check_id_car is None and check_Snum_in_dbCar is None:
-        car = {"email": car.email,
+        car = {"email": email,
                "ID": car.ID,
                "serial_number": car.serial_number,
                "bt1": "สวัสดีครับ",
