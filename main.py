@@ -107,7 +107,7 @@ def user_login(u: User):
 
 class Text(BaseModel):
     token: str
-    serial_number: int
+    serial_number: str
     text1: Optional[str] = None
     text2: Optional[str] = None
     text3: Optional[str] = None
@@ -224,7 +224,7 @@ def get_car(token: str, serial_number: str):
 
 
 class Input(BaseModel):
-    serial_number: int
+    serial_number: str
     bt1: int
     bt2: int
     bt3: int
