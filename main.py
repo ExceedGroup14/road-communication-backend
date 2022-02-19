@@ -270,25 +270,25 @@ def get_text(input: Input):
     car = dbCar.find_one(query, {})
     if input.bt1 == 1:
         return {
-            "text": car["bt1"]
+            "text": 1
         }
     elif input.bt2 == 1:
         return {
-            "text": car["bt2"]
+            "text": 2
         }
     elif input.bt3 == 1:
         return {
-            "text": car["bt3"]
+            "text": 3
         }
     elif input.bt4 == 1:
         return {
-            "text": car["bt4"]
+            "text": 4
         }
     elif input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
         return {
-            "text": car["break_light"]
+            "text": 5
         }
     elif input.bt_break == 1:
         return {
-            "text": car["broken"]
+            "text": 6
         }
