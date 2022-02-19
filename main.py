@@ -46,7 +46,7 @@ passwordContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class Car(BaseModel):
-    email: str
+    token: str
     ID: str
     serial_number: str
 
@@ -150,9 +150,11 @@ def user_add_text(t: Text):
 
 @app.post('/add-car/')
 def add_car(car: Car):
+    processed_token = jwt.decode(car.token, SECRET, algorithms="HS256")
+    email = processed_token["email"]
     query = {"ID": car.ID}
     query2 = {"serial_number": car.serial_number}
-    query3 = {"email": car.email}
+    query3 = {"email": email}
 
     check_user = dbUser.find_one(query3, {})
     check_id_car = dbCar.find_one(query, {"_id": 0})
