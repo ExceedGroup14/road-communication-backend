@@ -181,7 +181,13 @@ def add_car(car: Car):
                "Numbt1": 0,
                "Numbt2": 0,
                "Numbt3": 0,
-               "Numbt4": 0
+               "Numbt4": 0,
+               "status_bt1": 0,
+               "status_bt2": 0,
+               "status_bt3": 0,
+               "status_bt4": 0,
+               "status_break": 0,
+               "status_broken": 0
                }
         c = jsonable_encoder(car)
         dbCar.insert_one(c)
@@ -226,37 +232,65 @@ def output_text_hardware(input: Input):
     car = dbCar.find_one(query, {})
     if input.bt1 == 1:
         value = car["Numbt1"] + 1
-        new_value = {"$set": {"Numbt1": value}}
+        new_value = {"$set": {"Numbt1": value, "status_bt1": 1}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["bt1"]
         }
-    elif input.bt2 == 1:
+    elif input.bt1 == 0:
+        new_value = {"$set": {"status_bt1": 0}}
+        dbCar.update_one(query, new_value)
+
+    if input.bt2 == 1:
         value = car["Numbt2"] + 1
-        new_value = {"$set": {"Numbt2": value}}
+        new_value = {"$set": {"Numbt2": value, "status_bt2": 1}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["bt2"]
         }
-    elif input.bt3 == 1:
+
+    elif input.bt2 == 0:
+        new_value = {"$set": {"status_bt2": 0}}
+        dbCar.update_one(query, new_value)
+
+    if input.bt3 == 1:
         value = car["Numbt3"] + 1
-        new_value = {"$set": {"Numbt3": value}}
+        new_value = {"$set": {"Numbt3": value, "status_bt3": 1}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["bt3"]
         }
-    elif input.bt4 == 1:
+    elif input.bt3 == 0:
+        new_value = {"$set": {"status_bt3": 0}}
+        dbCar.update_one(query, new_value)
+
+    if input.bt4 == 1:
         value = car["Numbt4"] + 1
-        new_value = {"$set": {"Numbt4": value}}
+        new_value = {"$set": {"Numbt4": value, "status_bt4": 1}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["bt4"]
         }
-    elif input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
+    elif input.bt4 == 0:
+        new_value = {"$set": {"status_bt4": 0}}
+        dbCar.update_one(query, new_value)
+
+    if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
+        new_value = {"$set": {"status_break": 1, "status_broken": 0}}
+        dbCar.update_one(query, new_value)
         return {
             "text": car["break_light"]
         }
     elif input.bt_break == 1:
+        new_value = {"$set": {"status_broken": 1}}
+        dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
         }
+    elif input.bt_break == 0:
+        new_value = {"$set": {"status_break": 0}}
+        dbCar.update_one(query, new_value)
+
+
+
+
