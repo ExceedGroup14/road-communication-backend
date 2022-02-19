@@ -108,42 +108,41 @@ def user_login(u: User):
 class Text(BaseModel):
     token: str
     serial_number: str
-    text1: Optional[str] = None
-    text2: Optional[str] = None
-    text3: Optional[str] = None
-    text4: Optional[str] = None
+    text1: str
+    text2: str
+    text3: str
+    text4: str
 
 
 # add text to bottom
 @app.put("/add-text/")
 def user_add_text(t: Text):
-    processed_token = jwt.decode(t.token, SECRET, algorithms="HS256")
-    email = {"email": processed_token["email"]}
-    if t.text1 is None and t.text2 is None and t.text3 is None and t.text4 is None:
-        return {
-            "result": "nothing change"
-        }
+    serial_number = {"serial_number": t.serial_number}
+    car = dbCar.find_one(serial_number, {})
 
-    if t.text1 is not None:
+    if t.text1 != car['bt1']:
         new_value = {"$set": {"bt1": t.text1}}
         new_num = {"$set": {"Numbt1": 0}}
-        dbCar.update_one(email, new_value)
-        dbCar.update_one(email, new_num)
-    if t.text2 is not None:
+        dbCar.update_one(serial_number, new_value)
+        dbCar.update_one(serial_number, new_num)
+
+    if t.text2 != car['bt2']:
         new_value = {"$set": {"bt2": t.text2}}
         new_num = {"$set": {"Numbt2": 0}}
-        dbCar.update_one(email, new_value)
-        dbCar.update_one(email, new_num)
-    if t.text3 is not None:
+        dbCar.update_one(serial_number, new_value)
+        dbCar.update_one(serial_number, new_num)
+
+    if t.text3 != car['bt3']:
         new_value = {"$set": {"bt3": t.text3}}
         new_num = {"$set": {"Numbt3": 0}}
-        dbCar.update_one(email, new_value)
-        dbCar.update_one(email, new_num)
-    if t.text4 is not None:
+        dbCar.update_one(serial_number, new_value)
+        dbCar.update_one(serial_number, new_num)
+
+    if t.text4 != car['bt4']:
         new_value = {"$set": {"bt4": t.text4}}
         new_num = {"$set": {"Numbt4": 0}}
-        dbCar.update_one(email, new_value)
-        dbCar.update_one(email, new_num)
+        dbCar.update_one(serial_number, new_value)
+        dbCar.update_one(serial_number, new_num)
     return {
         "result": "add text to bottom successfully!"
     }
@@ -301,7 +300,3 @@ def output_text_hardware(input: Input):
     elif input.bt4 == 0:
         new_value = {"$set": {"status_bt4": 0}}
         dbCar.update_one(query, new_value)
-
-
-
-
