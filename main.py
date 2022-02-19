@@ -5,7 +5,8 @@ from pydantic import BaseModel
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from passlib.context import CryptContext
-
+from jose import JWTError, jwt
+import time
 app = FastAPI()
 
 origins = [
@@ -74,9 +75,10 @@ def user_register(u: NewUser):
             "result": "Username or Email is already use"
         }
 
+SECRET = "aa452d886485af0c397cb635cab16f4213ea9b97e311b38dd7d47c0184461151"
 
 # login
-@app.get("/login/")
+@app.post("/login/")
 def user_login(u: User):
     query = {
         "username": u.username,
@@ -86,9 +88,11 @@ def user_login(u: User):
     if user is None:
         raise HTTPException(404, detail=f"Couldn't find user: {u.username}")
     elif passwordContext.verify(u.password, user["password"]):
+        expirationTime = int(time.time() + 3600)
+        token = jwt.encode({"exp": expirationTime}, SECRET, algorithm="HS256")
+
         return {
-            "username": user["username"],
-            "email": user["email"]
+            "token": token
         }
     else:
         return {
@@ -191,7 +195,7 @@ def get_all_car(email: str):
 
 
 class Input(BaseModel):
-    serial_number: str
+    serial_number: int
     bt1: int
     bt2: int
     bt3: int
@@ -201,7 +205,7 @@ class Input(BaseModel):
     senlight2: int
 
 
-@app.put("/output/")
+@app.post("/output/")
 def output_text_hardware(input: Input):
     query = {
         "serial_number": input.serial_number
