@@ -89,7 +89,9 @@ def user_login(u: User):
 
     user = dbUser.find_one(query, {})
     if user is None:
-        raise HTTPException(404, detail=f"Couldn't find user: {u.username}")
+        return {
+            "result": "Username not found"
+        }
     elif passwordContext.verify(u.password, user["password"]):
         expirationTime = int(time.time() + 3600)
         token = jwt.encode({"exp": expirationTime, "email": user["email"]}, SECRET, algorithm="HS256")
