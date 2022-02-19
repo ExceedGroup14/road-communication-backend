@@ -208,7 +208,7 @@ def get_all_car(token: str):
 
 
 class Input(BaseModel):
-    serial_number: int
+    serial_number: str
     bt1: int
     bt2: int
     bt3: int
@@ -259,36 +259,4 @@ def output_text_hardware(input: Input):
     elif input.bt_break == 1:
         return {
             "text": car["broken"]
-        }
-
-
-@app.get("/get-text/")
-def get_text(input: Input):
-    query = {
-        "serial_number": input.serial_number
-    }
-    car = dbCar.find_one(query, {})
-    if input.bt1 == 1:
-        return {
-            "text": 1
-        }
-    elif input.bt2 == 1:
-        return {
-            "text": 2
-        }
-    elif input.bt3 == 1:
-        return {
-            "text": 3
-        }
-    elif input.bt4 == 1:
-        return {
-            "text": 4
-        }
-    elif input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
-        return {
-            "text": 5
-        }
-    elif input.bt_break == 1:
-        return {
-            "text": 6
         }
