@@ -89,7 +89,9 @@ def user_login(u: User):
 
     user = dbUser.find_one(query, {})
     if user is None:
-        raise HTTPException(404, detail=f"Couldn't find user: {u.username}")
+        return {
+            "result": "Username not found"
+        }
     elif passwordContext.verify(u.password, user["password"]):
         expirationTime = int(time.time() + 3600)
         token = jwt.encode({"exp": expirationTime, "email": user["email"]}, SECRET, algorithm="HS256")
@@ -105,7 +107,7 @@ def user_login(u: User):
 
 class Text(BaseModel):
     token: str
-    serial_number: int
+    serial_number: str
     text1: Optional[str] = None
     text2: Optional[str] = None
     text3: Optional[str] = None
@@ -213,6 +215,14 @@ def get_all_car(token: str):
     }
 
 
+@app.get('/get_car/')
+def get_car(token: str, serial_number: str):
+    processed_token = jwt.decode(token, SECRET, algorithms="HS256")
+    email = processed_token["email"]
+    car = dbCar.find_one({"email": email, "serial_number": serial_number}, {"_id": 0})
+    return {"result": car}
+
+
 class Input(BaseModel):
     serial_number: str
     bt1: int
@@ -290,7 +300,5 @@ def output_text_hardware(input: Input):
     elif input.bt_break == 0:
         new_value = {"$set": {"status_break": 0}}
         dbCar.update_one(query, new_value)
-
-
 
 
