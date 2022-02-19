@@ -240,6 +240,23 @@ def output_text_hardware(input: Input):
         "serial_number": input.serial_number
     }
     car = dbCar.find_one(query, {})
+
+    if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
+        new_value = {"$set": {"status_break": 1, "status_broken": 0}}
+        dbCar.update_one(query, new_value)
+        return {
+            "text": car["break_light"]
+        }
+    elif input.bt_break == 1:
+        new_value = {"$set": {"status_broken": 1}}
+        dbCar.update_one(query, new_value)
+        return {
+            "text": car["broken"]
+        }
+    elif input.bt_break == 0:
+        new_value = {"$set": {"status_break": 0}}
+        dbCar.update_one(query, new_value)
+
     if input.bt1 == 1:
         value = car["Numbt1"] + 1
         new_value = {"$set": {"Numbt1": value, "status_bt1": 1}}
@@ -285,20 +302,6 @@ def output_text_hardware(input: Input):
         new_value = {"$set": {"status_bt4": 0}}
         dbCar.update_one(query, new_value)
 
-    if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
-        new_value = {"$set": {"status_break": 1, "status_broken": 0}}
-        dbCar.update_one(query, new_value)
-        return {
-            "text": car["break_light"]
-        }
-    elif input.bt_break == 1:
-        new_value = {"$set": {"status_broken": 1}}
-        dbCar.update_one(query, new_value)
-        return {
-            "text": car["broken"]
-        }
-    elif input.bt_break == 0:
-        new_value = {"$set": {"status_break": 0}}
-        dbCar.update_one(query, new_value)
+
 
 
