@@ -243,13 +243,13 @@ def output_text_hardware(input: Input):
             "text": car["break_light"]
         }
     elif input.bt_break == 1 and input.senlight_l == 1 and input.senlight_r == 0:
-        new_value = {"$set": {"status_broken_r": 1}}
+        new_value = {"$set": {"status_broken_r": 1, "status_broken_l": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
         }
     elif input.bt_break == 1 and input.senlight_r == 1 and input.senlight_l == 0:
-        new_value = {"$set": {"status_broken_l": 1}}
+        new_value = {"$set": {"status_broken_l": 1, "status_broken_r": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
