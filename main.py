@@ -246,36 +246,37 @@ class Input(BaseModel):
     bt3: int
     bt4: int
     bt_break: int
-    senlight_l: int
-    senlight_r: int
+    senlight1: int
+    senlight2: int
 
 
 @app.post("/output/")
 def output_text_hardware(input: Input):
+    print(input)
     query = {
         "serial_number": input.serial_number
     }
     car = dbCar.find_one(query, {})
 
-    if input.bt_break == 1 and input.senlight_l == 1 and input.senlight_r == 1:
+    if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
         new_value = {"$set": {"status_break": 1, "status_broken_l": 0, "status_broken_r": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["break_light"]
         }
-    elif input.bt_break == 1 and input.senlight_l == 1 and input.senlight_r == 0:
+    elif input.bt_break == 1 and input.senlight2 == 1 and input.senlight1 == 0:
         new_value = {"$set": {"status_broken_r": 1, "status_broken_l": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
         }
-    elif input.bt_break == 1 and input.senlight_r == 1 and input.senlight_l == 0:
+    elif input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 0:
         new_value = {"$set": {"status_broken_l": 1, "status_broken_r": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
         }
-    elif input.bt_break == 1 and input.senlight_l == 0 and input.senlight_r == 0:
+    elif input.bt_break == 1 and input.senlight1 == 0 and input.senlight2 == 0:
         new_value = {"$set": {"status_broken_l": 1, "status_broken_r": 1}}
         dbCar.update_one(query, new_value)
         return {
@@ -329,6 +330,76 @@ def output_text_hardware(input: Input):
     elif input.bt4 == 0:
         new_value = {"$set": {"status_bt4": 0}}
         dbCar.update_one(query, new_value)
+
+# @app.post("/output/")
+# def output_text_hardware(input: Input):
+#     query = {
+#         "serial_number": input.serial_number
+#     }
+#     car = dbCar.find_one(query, {})
+
+#     if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
+#         new_value = {"$set": {"status_break": 1, "status_broken": 0}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["break_light"]
+#         }
+#     elif input.bt_break == 1:
+#         new_value = {"$set": {"status_broken": 1}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["broken"]
+#         }
+#     elif input.bt_break == 0:
+#         new_value = {"$set": {"status_break": 0}}
+#         dbCar.update_one(query, new_value)
+
+#     if input.bt1 == 1:
+#         value = car["Numbt1"] + 1
+#         new_value = {"$set": {"Numbt1": value, "status_bt1": 1}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["bt1"]
+#         }
+#     elif input.bt1 == 0:
+#         new_value = {"$set": {"status_bt1": 0}}
+#         dbCar.update_one(query, new_value)
+
+#     if input.bt2 == 1:
+#         value = car["Numbt2"] + 1
+#         new_value = {"$set": {"Numbt2": value, "status_bt2": 1}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["bt2"]
+#         }
+
+#     elif input.bt2 == 0:
+#         new_value = {"$set": {"status_bt2": 0}}
+#         dbCar.update_one(query, new_value)
+
+#     if input.bt3 == 1:
+#         value = car["Numbt3"] + 1
+#         new_value = {"$set": {"Numbt3": value, "status_bt3": 1}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["bt3"]
+#         }
+#     elif input.bt3 == 0:
+#         new_value = {"$set": {"status_bt3": 0}}
+#         dbCar.update_one(query, new_value)
+
+#     if input.bt4 == 1:
+#         value = car["Numbt4"] + 1
+#         new_value = {"$set": {"Numbt4": value, "status_bt4": 1}}
+#         dbCar.update_one(query, new_value)
+#         return {
+#             "text": car["bt4"]
+#         }
+#     elif input.bt4 == 0:
+#         new_value = {"$set": {"status_bt4": 0}}
+#         dbCar.update_one(query, new_value)
+
+
 
 
 def verify_token(token):
