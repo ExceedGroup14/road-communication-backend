@@ -117,32 +117,25 @@ class Text(BaseModel):
 # add text to bottom
 @app.put("/add-text/")
 def user_add_text(t: Text):
-    serial_number = {"serial_number": t.serial_number}
-    car = dbCar.find_one(serial_number, {})
-
+    processed_token = jwt.decode(t.token, SECRET, algorithms="HS256")
+    email = processed_token["email"]
+    query = {"email": email, "serial_number": t.serial_number, }
+    car = dbCar.find_one(query, {})
     if t.text1 != car['bt1']:
-        new_value = {"$set": {"bt1": t.text1}}
-        new_num = {"$set": {"Numbt1": 0}}
-        dbCar.update_one(serial_number, new_value)
-        dbCar.update_one(serial_number, new_num)
+        new_value = {"$set": {"bt1": t.text1, "Numbt1": 0}}
+        dbCar.update_one(query, new_value)
 
     if t.text2 != car['bt2']:
-        new_value = {"$set": {"bt2": t.text2}}
-        new_num = {"$set": {"Numbt2": 0}}
-        dbCar.update_one(serial_number, new_value)
-        dbCar.update_one(serial_number, new_num)
+        new_value = {"$set": {"bt2": t.text2, "Numbt2": 0}}
+        dbCar.update_one(query, new_value)
 
     if t.text3 != car['bt3']:
-        new_value = {"$set": {"bt3": t.text3}}
-        new_num = {"$set": {"Numbt3": 0}}
-        dbCar.update_one(serial_number, new_value)
-        dbCar.update_one(serial_number, new_num)
+        new_value = {"$set": {"bt3": t.text3, "Numbt3": 0}}
+        dbCar.update_one(query, new_value)
 
     if t.text4 != car['bt4']:
-        new_value = {"$set": {"bt4": t.text4}}
-        new_num = {"$set": {"Numbt4": 0}}
-        dbCar.update_one(serial_number, new_value)
-        dbCar.update_one(serial_number, new_num)
+        new_value = {"$set": {"bt4": t.text4, "Numbt4": 0}}
+        dbCar.update_one(query, new_value)
     return {
         "result": "add text to bottom successfully!"
     }
@@ -190,7 +183,8 @@ def add_car(car: Car):
                "status_bt3": 0,
                "status_bt4": 0,
                "status_break": 0,
-               "status_broken": 0
+               "status_broken_l": 0,
+               "status_broken_r": 0
                }
         c = jsonable_encoder(car)
         dbCar.insert_one(c)
@@ -231,8 +225,8 @@ class Input(BaseModel):
     bt3: int
     bt4: int
     bt_break: int
-    senlight1: int
-    senlight2: int
+    senlight_l: int
+    senlight_r: int
 
 
 @app.post("/output/")
@@ -242,14 +236,26 @@ def output_text_hardware(input: Input):
     }
     car = dbCar.find_one(query, {})
 
-    if input.bt_break == 1 and input.senlight1 == 1 and input.senlight2 == 1:
-        new_value = {"$set": {"status_break": 1, "status_broken": 0}}
+    if input.bt_break == 1 and input.senlight_l == 1 and input.senlight_r == 1:
+        new_value = {"$set": {"status_break": 1, "status_broken_l": 0, "status_broken_r": 0}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["break_light"]
         }
-    elif input.bt_break == 1:
-        new_value = {"$set": {"status_broken": 1}}
+    elif input.bt_break == 1 and input.senlight_l == 1 and input.senlight_r == 0:
+        new_value = {"$set": {"status_broken_r": 1}}
+        dbCar.update_one(query, new_value)
+        return {
+            "text": car["broken"]
+        }
+    elif input.bt_break == 1 and input.senlight_r == 1 and input.senlight_l == 0:
+        new_value = {"$set": {"status_broken_l": 1}}
+        dbCar.update_one(query, new_value)
+        return {
+            "text": car["broken"]
+        }
+    elif input.bt_break == 1 and input.senlight_l == 0 and input.senlight_r == 0:
+        new_value = {"$set": {"status_broken_l": 1, "status_broken_r": 1}}
         dbCar.update_one(query, new_value)
         return {
             "text": car["broken"]
