@@ -235,7 +235,7 @@ def sorted_car(token: str, serial_number: str):
     email = processed_token["email"]
     car = dbCar.find_one({"email": email, "serial_number": serial_number}, {"_id": 0})
     cars = {car["bt1"]: car["Numbt1"], car["bt2"]: car["Numbt2"], car["bt3"]: car["Numbt3"], car["bt4"]: car["Numbt4"]}
-    sortedCars = {k: v for k, v in sorted(cars.items(), key=lambda item: item[1])}
+    sortedCars = {k: v for k, v in sorted(cars.items(), key=lambda item: item[1],reverse=True)}
     return {"result": sortedCars}
 
 
