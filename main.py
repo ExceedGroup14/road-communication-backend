@@ -117,7 +117,9 @@ class Text(BaseModel):
 # add text to bottom
 @app.put("/add-text/")
 def user_add_text(t: Text):
-    processed_token = jwt.decode(t.token, SECRET, algorithms="HS256")
+    isValid, processed_token = verify_token(t.token)
+    if not isValid:
+        return {"result": "Invalid token"}
     email = processed_token["email"]
     query = {"email": email, "serial_number": t.serial_number, }
     car = dbCar.find_one(query, {})
@@ -143,7 +145,10 @@ def user_add_text(t: Text):
 
 @app.post('/add-car/')
 def add_car(car: Car):
-    processed_token = jwt.decode(car.token, SECRET, algorithms="HS256")
+    isValid, processed_token = verify_token(car.token)
+    if not isValid:
+        return {"result": "Invalid token"}
+    
     email = processed_token["email"]
     query = {"ID": car.ID}
     query2 = {"serial_number": car.serial_number}
@@ -199,7 +204,9 @@ def add_car(car: Car):
 
 @app.get('/all-car/')
 def get_all_car(token: str):
-    processed_token = jwt.decode(token, SECRET, algorithms="HS256")
+    isValid, processed_token = verify_token(token)
+    if not isValid:
+        return {"result": "Invalid token"}
     email = processed_token["email"]
     car = dbCar.find({"email": email}, {"_id": 0})
     data = []
@@ -212,7 +219,9 @@ def get_all_car(token: str):
 
 @app.get('/get_car/')
 def get_car(token: str, serial_number: str):
-    processed_token = jwt.decode(token, SECRET, algorithms="HS256")
+    isValid, processed_token = verify_token(token)
+    if not isValid:
+        return {"result": "Invalid token"}
     email = processed_token["email"]
     car = dbCar.find_one({"email": email, "serial_number": serial_number}, {"_id": 0})
     return {"result": car}
@@ -308,3 +317,11 @@ def output_text_hardware(input: Input):
     elif input.bt4 == 0:
         new_value = {"$set": {"status_bt4": 0}}
         dbCar.update_one(query, new_value)
+
+def verify_token(token):
+    try:
+        email = jwt.decode(token, SECRET, algorithms="HS256")
+
+        return True, email
+    except:
+        return False, {}
